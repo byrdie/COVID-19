@@ -5,9 +5,11 @@ import datetime
 import csv
 import numpy as np
 
-__all__ = ['confirmed_filename', 'Dataset', 'read']
+__all__ = ['confirmed_global_filename', 'Dataset', 'read']
 
-confirmed_filename = pathlib.Path('time_series_19-covid-Confirmed.csv')
+base_path = pathlib.Path(__file__).parent.parent / 'csse_covid_19_data/csse_covid_19_time_series'
+confirmed_global_filename = base_path / pathlib.Path('time_series_covid19_confirmed_global.csv')
+confirmed_us_filename = base_path / pathlib.Path('time_series_covid19_confirmed_US.csv')
 
 
 @dataclasses.dataclass
@@ -27,17 +29,22 @@ class axis:
     time = 1
 
 
-def read(filename: pathlib.Path):
+def read(path: pathlib.Path, is_us=False):
 
-    class column:
-        state = 0
-        country = 1
-        latitude = 2
-        longitude = 3
-        data = slice(4, None)
-
-    base_path = pathlib.Path(__file__).parent.parent / 'csse_covid_19_data/csse_covid_19_time_series'
-    path = base_path / filename
+    if not is_us:
+        class column:
+            state = 0
+            country = 1
+            latitude = 2
+            longitude = 3
+            data = slice(4, None)
+    else:
+        class column:
+            state = 6
+            country = 7
+            latitude = 8
+            longitude = 9
+            data = slice(11, None)
 
     states = []
     countries = []
@@ -45,7 +52,7 @@ def read(filename: pathlib.Path):
     longitudes = []
     data = []
 
-    with open(path, 'r') as f:
+    with open(str(path), 'r') as f:
 
         reader = csv.reader(f)
 
@@ -70,6 +77,6 @@ def read(filename: pathlib.Path):
 
 def test_read():
 
-    dataset = read(confirmed_filename)
+    dataset = read(confirmed_global_filename)
 
     assert isinstance(dataset, Dataset)

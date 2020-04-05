@@ -9,7 +9,17 @@ __all__ = ['plot_histogram']
 
 def plot_histogram():
 
-    confirmed = covid.data.read(covid.data.confirmed_filename)
+    confirmed_global = covid.data.read(covid.data.confirmed_global_filename)
+    confirmed_us = covid.data.read(covid.data.confirmed_us_filename, is_us=True)
+
+    confirmed = covid.data.Dataset(
+        dates=confirmed_global.dates+confirmed_us.dates,
+        states=confirmed_global.states + confirmed_us.states,
+        countries=confirmed_global.countries + confirmed_us.countries,
+        latitudes=np.concatenate([confirmed_global.latitudes, confirmed_us.latitudes]),
+        longitudes=np.concatenate([confirmed_global.longitudes, confirmed_us.longitudes]),
+        data=np.concatenate([confirmed_global.data, confirmed_us.data]),
+    )
 
     def calc_hist(index: int):
 
